@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "676200314652",
+    "project_id": "floreria-ambar",
+    "storage_bucket": "floreria-ambar.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:676200314652:android:aafbe3e12fd9053abfacd9",
+        "android_client_info": {
+          "package_name": "com.example.flutter_application_1"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "676200314652-goeaapjon9tcq8h5plc5o3ftvjubvef1.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.flutter_application_1",
+            "certificate_hash": "de785eccdb00824702e8ee4d733bcc0d505ad879"
+          }
+        },
+        {
+          "client_id": "676200314652-saikl3v6uq87cv97q5h5dn3h5bok1f27.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC5wRdChiLMGL5C5iu-2IHulDziRWqsCYA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "676200314652-saikl3v6uq87cv97q5h5dn3h5bok1f27.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "676200314652-0buable0daric6bt5a0mvcik33h3aob5.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.flutterApplication1"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
