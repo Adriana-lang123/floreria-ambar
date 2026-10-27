@@ -5,6 +5,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class MisArreglosScreen extends StatelessWidget {
   const MisArreglosScreen({super.key});
 
+  // =====================================================
+  // FECHA
+  // =====================================================
+
   String obtenerFecha(dynamic fecha) {
     if (fecha == null) {
       return 'No especificada';
@@ -20,6 +24,78 @@ class MisArreglosScreen extends StatelessWidget {
 
     return 'No especificada';
   }
+
+  // =====================================================
+  // COLOR DEL ESTADO
+  // =====================================================
+
+  Color _colorEstado(String estado) {
+    switch (estado) {
+      case 'Aceptado':
+        return Colors.green;
+
+      case 'Rechazado':
+        return Colors.red;
+
+      default:
+        return Colors.orange;
+    }
+  }
+
+  // =====================================================
+  // ICONO DEL ESTADO
+  // =====================================================
+
+  IconData _iconoEstado(String estado) {
+    switch (estado) {
+      case 'Aceptado':
+        return Icons.check_circle_outline;
+
+      case 'Rechazado':
+        return Icons.cancel_outlined;
+
+      default:
+        return Icons.access_time;
+    }
+  }
+
+  // =====================================================
+  // MENSAJE DEL ESTADO
+  // =====================================================
+
+  String _mensajeEstado(String estado) {
+    switch (estado) {
+      case 'Aceptado':
+        return 'La florería aceptó tu solicitud de arreglo personalizado.';
+
+      case 'Rechazado':
+        return 'La florería no aceptó esta solicitud de arreglo personalizado.';
+
+      default:
+        return 'Tu solicitud está siendo revisada por la florería.';
+    }
+  }
+
+  // =====================================================
+  // SUBTÍTULO
+  // =====================================================
+
+  String _subtituloEstado(String estado) {
+    switch (estado) {
+      case 'Aceptado':
+        return 'Tu solicitud fue aceptada';
+
+      case 'Rechazado':
+        return 'Tu solicitud fue rechazada';
+
+      default:
+        return 'Tu solicitud está pendiente';
+    }
+  }
+
+  // =====================================================
+  // BUILD
+  // =====================================================
 
   @override
   Widget build(BuildContext context) {
@@ -46,7 +122,6 @@ class MisArreglosScreen extends StatelessWidget {
         stream: FirebaseFirestore.instance
             .collection('arreglos_personalizados')
             .where('usuarioId', isEqualTo: usuario.uid)
-            .where('estado', isEqualTo: 'Aceptado')
             .snapshots(),
 
         builder: (context, snapshot) {
@@ -72,7 +147,7 @@ class MisArreglosScreen extends StatelessWidget {
                     const SizedBox(height: 15),
 
                     const Text(
-                      'No se pudieron cargar tus arreglos',
+                      'No se pudieron cargar tus solicitudes',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 18,
@@ -109,7 +184,7 @@ class MisArreglosScreen extends StatelessWidget {
                     const SizedBox(height: 18),
 
                     const Text(
-                      'Aún no tienes arreglos aceptados',
+                      'Aún no tienes solicitudes',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 20,
@@ -120,7 +195,7 @@ class MisArreglosScreen extends StatelessWidget {
                     const SizedBox(height: 8),
 
                     const Text(
-                      'Cuando la florería acepte una de tus solicitudes, aparecerá aquí.',
+                      'Cuando envíes una solicitud de arreglo personalizado, aparecerá aquí.',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: Colors.grey,
@@ -134,7 +209,22 @@ class MisArreglosScreen extends StatelessWidget {
             );
           }
 
-          final arreglos = snapshot.data!.docs;
+          final arreglos = snapshot.data!.docs.toList();
+
+          // Mostrar primero las solicitudes más recientes.
+          arreglos.sort((a, b) {
+            final datosA = a.data() as Map<String, dynamic>;
+            final datosB = b.data() as Map<String, dynamic>;
+
+            final fechaA = datosA['fechaSolicitud'];
+            final fechaB = datosB['fechaSolicitud'];
+
+            if (fechaA is Timestamp && fechaB is Timestamp) {
+              return fechaB.compareTo(fechaA);
+            }
+
+            return 0;
+          });
 
           return ListView.builder(
             padding: const EdgeInsets.all(16),
@@ -157,7 +247,7 @@ class MisArreglosScreen extends StatelessWidget {
               final String colores = datos['colores'] ?? 'No especificados';
 
               final String presupuesto =
-                  datos['presupuesto'] ?? 'No especificado';
+                  datos['presupuesto']?.toString() ?? 'No especificado';
 
               final String floresDeseadas = datos['floresDeseadas'] ?? '';
 
@@ -170,11 +260,15 @@ class MisArreglosScreen extends StatelessWidget {
               final bool permiteSustitucion =
                   datos['permiteSustitucion'] ?? false;
 
-              final String estado = datos['estado'] ?? 'Aceptado';
+              final String estado = datos['estado'] ?? 'Pendiente';
 
               final String hora = datos['horaEntrega'] ?? 'No especificada';
 
               final String fecha = obtenerFecha(datos['fechaEntrega']);
+
+              final colorEstado = _colorEstado(estado);
+
+              final iconoEstado = _iconoEstado(estado);
 
               return Card(
                 margin: const EdgeInsets.only(bottom: 18),
@@ -190,32 +284,32 @@ class MisArreglosScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // =====================================
+                      // =================================================
                       // ENCABEZADO
-                      // =====================================
+                      // =================================================
                       Row(
                         children: [
                           Container(
                             width: 52,
                             height: 52,
                             decoration: BoxDecoration(
-                              color: Colors.green.withOpacity(0.10),
+                              color: colorEstado.withOpacity(0.10),
                               borderRadius: BorderRadius.circular(15),
                             ),
-                            child: const Icon(
+                            child: Icon(
                               Icons.local_florist,
-                              color: Colors.green,
+                              color: colorEstado,
                               size: 28,
                             ),
                           ),
 
                           const SizedBox(width: 12),
 
-                          const Expanded(
+                          Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
+                                const Text(
                                   'Arreglo personalizado',
                                   style: TextStyle(
                                     fontSize: 17,
@@ -223,11 +317,11 @@ class MisArreglosScreen extends StatelessWidget {
                                   ),
                                 ),
 
-                                SizedBox(height: 3),
+                                const SizedBox(height: 3),
 
                                 Text(
-                                  'Tu solicitud fue aceptada',
-                                  style: TextStyle(
+                                  _subtituloEstado(estado),
+                                  style: const TextStyle(
                                     color: Colors.grey,
                                     fontSize: 12,
                                   ),
@@ -242,24 +336,20 @@ class MisArreglosScreen extends StatelessWidget {
                               vertical: 7,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.green.withOpacity(0.10),
+                              color: colorEstado.withOpacity(0.10),
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(
-                                  Icons.check_circle,
-                                  color: Colors.green,
-                                  size: 16,
-                                ),
+                                Icon(iconoEstado, color: colorEstado, size: 16),
 
                                 const SizedBox(width: 5),
 
                                 Text(
                                   estado,
-                                  style: const TextStyle(
-                                    color: Colors.green,
+                                  style: TextStyle(
+                                    color: colorEstado,
                                     fontSize: 12,
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -272,9 +362,9 @@ class MisArreglosScreen extends StatelessWidget {
 
                       const SizedBox(height: 20),
 
-                      // =====================================
+                      // =================================================
                       // INFORMACIÓN PRINCIPAL
-                      // =====================================
+                      // =================================================
                       _dato(
                         icono: Icons.local_florist_outlined,
                         titulo: 'Tipo de arreglo',
@@ -329,9 +419,9 @@ class MisArreglosScreen extends StatelessWidget {
 
                       const SizedBox(height: 15),
 
-                      // =====================================
+                      // =================================================
                       // PREFERENCIAS
-                      // =====================================
+                      // =================================================
                       const Text(
                         'Tus preferencias',
                         style: TextStyle(
@@ -418,9 +508,9 @@ class MisArreglosScreen extends StatelessWidget {
 
                       const SizedBox(height: 15),
 
-                      // =====================================
+                      // =================================================
                       // ENTREGA
-                      // =====================================
+                      // =================================================
                       const Text(
                         'Entrega',
                         style: TextStyle(
@@ -455,34 +545,31 @@ class MisArreglosScreen extends StatelessWidget {
 
                       const SizedBox(height: 18),
 
-                      // =====================================
-                      // MENSAJE DE ACEPTACIÓN
-                      // =====================================
+                      // =================================================
+                      // MENSAJE DEL ESTADO
+                      // =================================================
                       Container(
                         width: double.infinity,
                         padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
-                          color: Colors.green.withOpacity(0.06),
+                          color: colorEstado.withOpacity(0.06),
                           borderRadius: BorderRadius.circular(14),
                           border: Border.all(
-                            color: Colors.green.withOpacity(0.20),
+                            color: colorEstado.withOpacity(0.20),
                           ),
                         ),
-                        child: const Row(
+                        child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Icon(
-                              Icons.check_circle_outline,
-                              color: Colors.green,
-                            ),
+                            Icon(iconoEstado, color: colorEstado),
 
-                            SizedBox(width: 10),
+                            const SizedBox(width: 10),
 
                             Expanded(
                               child: Text(
-                                'La florería aceptó tu solicitud de arreglo personalizado.',
+                                _mensajeEstado(estado),
                                 style: TextStyle(
-                                  color: Colors.green,
+                                  color: colorEstado,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
