@@ -53,7 +53,9 @@ class ArreglosPersonalizadosAdminScreen extends StatelessWidget {
           .doc(id)
           .update({'estado': nuevoEstado});
 
-      if (!context.mounted) return;
+      if (!context.mounted) {
+        return;
+      }
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -68,7 +70,9 @@ class ArreglosPersonalizadosAdminScreen extends StatelessWidget {
         ),
       );
     } catch (e) {
-      if (!context.mounted) return;
+      if (!context.mounted) {
+        return;
+      }
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('No se pudo actualizar la solicitud: $e')),
@@ -224,7 +228,7 @@ class ArreglosPersonalizadosAdminScreen extends StatelessWidget {
               final String colores = datos['colores'] ?? 'No especificados';
 
               final String presupuesto =
-                  datos['presupuesto'] ?? 'No especificado';
+                  datos['presupuesto']?.toString() ?? 'No especificado';
 
               final String floresDeseadas = datos['floresDeseadas'] ?? '';
 
@@ -243,8 +247,15 @@ class ArreglosPersonalizadosAdminScreen extends StatelessWidget {
 
               final String fecha = obtenerFecha(datos['fechaEntrega']);
 
+              final String correo = datos['correoUsuario'] ?? 'Sin correo';
+
+              final bool floristaEligeFlores =
+                  datos['floristaEligeFlores'] ?? false;
+
+              final Color estadoColor = colorEstado(estado);
+
               return Card(
-                margin: const EdgeInsets.only(bottom: 18),
+                margin: const EdgeInsets.only(bottom: 16),
                 elevation: 3,
                 color: Colors.white,
                 shadowColor: Colors.purple.shade100,
@@ -252,82 +263,211 @@ class ArreglosPersonalizadosAdminScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(20),
                 ),
 
-                child: Padding(
-                  padding: const EdgeInsets.all(18),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
 
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // =====================================
-                      // ENCABEZADO
-                      // =====================================
-                      Row(
-                        children: [
-                          Container(
-                            width: 50,
-                            height: 50,
-                            decoration: BoxDecoration(
-                              color: Colors.purple.shade50,
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                            child: const Icon(
-                              Icons.local_florist_outlined,
-                              color: Colors.purple,
-                              size: 27,
+                  child: ExpansionTile(
+                    tilePadding: const EdgeInsets.fromLTRB(18, 14, 14, 14),
+
+                    childrenPadding: const EdgeInsets.fromLTRB(18, 0, 18, 18),
+
+                    iconColor: Colors.purple,
+
+                    collapsedIconColor: Colors.grey,
+
+                    // =================================================
+                    // RESUMEN
+                    // =================================================
+                    leading: Container(
+                      width: 50,
+                      height: 50,
+                      decoration: BoxDecoration(
+                        color: Colors.purple.shade50,
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: const Icon(
+                        Icons.local_florist_outlined,
+                        color: Colors.purple,
+                        size: 27,
+                      ),
+                    ),
+
+                    title: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            tipoArreglo,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
+                        ),
 
-                          const SizedBox(width: 12),
-
-                          const Expanded(
-                            child: Text(
-                              'Solicitud de arreglo',
-                              style: TextStyle(
-                                fontSize: 17,
-                                fontWeight: FontWeight.bold,
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 9,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: estadoColor.withOpacity(0.10),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                iconoEstado(estado),
+                                size: 15,
+                                color: estadoColor,
                               ),
-                            ),
-                          ),
 
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 7,
-                            ),
-                            decoration: BoxDecoration(
-                              color: colorEstado(estado).withOpacity(0.10),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  iconoEstado(estado),
-                                  size: 16,
-                                  color: colorEstado(estado),
+                              const SizedBox(width: 4),
+
+                              Text(
+                                estado,
+                                style: TextStyle(
+                                  color: estadoColor,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
                                 ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
 
-                                const SizedBox(width: 5),
+                    subtitle: Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.email_outlined,
+                                size: 16,
+                                color: Colors.grey,
+                              ),
 
-                                Text(
-                                  estado,
-                                  style: TextStyle(
-                                    color: colorEstado(estado),
+                              const SizedBox(width: 6),
+
+                              Expanded(
+                                child: Text(
+                                  correo,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
                                     fontSize: 12,
-                                    fontWeight: FontWeight.bold,
+                                    color: Colors.grey,
                                   ),
                                 ),
-                              ],
+                              ),
+                            ],
+                          ),
+
+                          const SizedBox(height: 6),
+
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.calendar_today_outlined,
+                                size: 16,
+                                color: Colors.grey,
+                              ),
+
+                              const SizedBox(width: 6),
+
+                              Text(
+                                fecha,
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey,
+                                ),
+                              ),
+
+                              const SizedBox(width: 12),
+
+                              const Icon(
+                                Icons.access_time,
+                                size: 16,
+                                color: Colors.grey,
+                              ),
+
+                              const SizedBox(width: 5),
+
+                              Expanded(
+                                child: Text(
+                                  hora,
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          const SizedBox(height: 6),
+
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.payments_outlined,
+                                size: 16,
+                                color: Colors.purple,
+                              ),
+
+                              const SizedBox(width: 6),
+
+                              Text(
+                                presupuesto.trim().isEmpty
+                                    ? 'Presupuesto no especificado'
+                                    : '\$$presupuesto MXN',
+                                style: const TextStyle(
+                                  color: Colors.purple,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          const SizedBox(height: 8),
+
+                          const Text(
+                            'Toca para ver detalles',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Colors.grey,
+                              fontStyle: FontStyle.italic,
                             ),
                           ),
                         ],
                       ),
+                    ),
 
-                      const SizedBox(height: 20),
+                    // =================================================
+                    // DETALLES DESPLEGABLES
+                    // =================================================
+                    children: [
+                      const Divider(),
 
-                      // =====================================
-                      // TIPO
-                      // =====================================
+                      const SizedBox(height: 10),
+
+                      const Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'Detalles de la solicitud',
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 15),
+
                       _dato(
                         icono: Icons.local_florist_outlined,
                         titulo: 'Tipo de arreglo',
@@ -336,9 +476,6 @@ class ArreglosPersonalizadosAdminScreen extends StatelessWidget {
 
                       const SizedBox(height: 12),
 
-                      // =====================================
-                      // ESTILO
-                      // =====================================
                       _dato(
                         icono: Icons.auto_awesome_outlined,
                         titulo: 'Estilo',
@@ -347,9 +484,6 @@ class ArreglosPersonalizadosAdminScreen extends StatelessWidget {
 
                       const SizedBox(height: 12),
 
-                      // =====================================
-                      // COLOR
-                      // =====================================
                       _dato(
                         icono: Icons.palette_outlined,
                         titulo: 'Colores predominantes',
@@ -358,9 +492,6 @@ class ArreglosPersonalizadosAdminScreen extends StatelessWidget {
 
                       const SizedBox(height: 12),
 
-                      // =====================================
-                      // TAMAÑO
-                      // =====================================
                       _dato(
                         icono: Icons.aspect_ratio,
                         titulo: 'Tamaño',
@@ -369,9 +500,6 @@ class ArreglosPersonalizadosAdminScreen extends StatelessWidget {
 
                       const SizedBox(height: 12),
 
-                      // =====================================
-                      // OCASIÓN
-                      // =====================================
                       _dato(
                         icono: Icons.card_giftcard_outlined,
                         titulo: 'Ocasión',
@@ -380,13 +508,10 @@ class ArreglosPersonalizadosAdminScreen extends StatelessWidget {
 
                       const SizedBox(height: 12),
 
-                      // =====================================
-                      // PRESUPUESTO
-                      // =====================================
                       _dato(
                         icono: Icons.payments_outlined,
                         titulo: 'Presupuesto',
-                        valor: presupuesto.isEmpty
+                        valor: presupuesto.trim().isEmpty
                             ? 'No especificado'
                             : '\$$presupuesto MXN',
                       ),
@@ -397,14 +522,14 @@ class ArreglosPersonalizadosAdminScreen extends StatelessWidget {
 
                       const SizedBox(height: 15),
 
-                      // =====================================
-                      // PREFERENCIAS
-                      // =====================================
-                      const Text(
-                        'Preferencias del cliente',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
+                      const Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'Preferencias del cliente',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
 
@@ -413,7 +538,9 @@ class ArreglosPersonalizadosAdminScreen extends StatelessWidget {
                       _detalleTexto(
                         titulo: 'Flores que le gustaría incluir',
                         valor: floresDeseadas,
-                        textoVacio: 'A elección de la florista',
+                        textoVacio: floristaEligeFlores
+                            ? 'A elección de la florista'
+                            : 'No especificadas',
                         icono: Icons.local_florist,
                       ),
 
@@ -428,9 +555,6 @@ class ArreglosPersonalizadosAdminScreen extends StatelessWidget {
 
                       const SizedBox(height: 10),
 
-                      // =====================================
-                      // SUSTITUCIÓN
-                      // =====================================
                       Container(
                         width: double.infinity,
                         padding: const EdgeInsets.all(12),
@@ -465,11 +589,8 @@ class ArreglosPersonalizadosAdminScreen extends StatelessWidget {
                         ),
                       ),
 
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 18),
 
-                      // =====================================
-                      // DESCRIPCIÓN
-                      // =====================================
                       _detalleTexto(
                         titulo: 'Cómo imagina su arreglo',
                         valor: descripcion,
@@ -477,11 +598,8 @@ class ArreglosPersonalizadosAdminScreen extends StatelessWidget {
                         icono: Icons.edit_note_outlined,
                       ),
 
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 10),
 
-                      // =====================================
-                      // MENSAJE TARJETA
-                      // =====================================
                       _detalleTexto(
                         titulo: 'Mensaje para tarjeta',
                         valor: mensajeTarjeta,
@@ -495,14 +613,14 @@ class ArreglosPersonalizadosAdminScreen extends StatelessWidget {
 
                       const SizedBox(height: 15),
 
-                      // =====================================
-                      // ENTREGA
-                      // =====================================
-                      const Text(
-                        'Entrega',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
+                      const Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'Entrega',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
 
@@ -530,9 +648,9 @@ class ArreglosPersonalizadosAdminScreen extends StatelessWidget {
                         ],
                       ),
 
-                      // =====================================
+                      // =================================================
                       // BOTONES
-                      // =====================================
+                      // =================================================
                       if (estado == 'Pendiente') ...[
                         const SizedBox(height: 22),
 
@@ -585,6 +703,41 @@ class ArreglosPersonalizadosAdminScreen extends StatelessWidget {
                               ),
                             ),
                           ],
+                        ),
+                      ],
+
+                      // =================================================
+                      // ESTADO FINAL
+                      // =================================================
+                      if (estado != 'Pendiente') ...[
+                        const SizedBox(height: 20),
+
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(13),
+                          decoration: BoxDecoration(
+                            color: estadoColor.withOpacity(0.07),
+                            borderRadius: BorderRadius.circular(13),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(iconoEstado(estado), color: estadoColor),
+
+                              const SizedBox(width: 10),
+
+                              Expanded(
+                                child: Text(
+                                  estado == 'Aceptado'
+                                      ? 'Esta solicitud fue aceptada.'
+                                      : 'Esta solicitud fue rechazada.',
+                                  style: TextStyle(
+                                    color: estadoColor,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ],

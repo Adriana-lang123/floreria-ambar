@@ -164,7 +164,7 @@ class _PedidosAdminScreenState extends State<PedidosAdminScreen> {
               ),
 
               // =================================================
-              // LISTA DE PEDIDOS
+              // LISTA
               // =================================================
               Expanded(
                 child: pedidos.isEmpty
@@ -230,92 +230,171 @@ class _PedidosAdminScreenState extends State<PedidosAdminScreen> {
                               datos['productos'] as List<dynamic>? ?? [];
 
                           return Card(
-                            margin: const EdgeInsets.only(bottom: 18),
+                            margin: const EdgeInsets.only(bottom: 14),
                             elevation: 3,
                             color: Colors.white,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(22),
+                              borderRadius: BorderRadius.circular(20),
                             ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(18),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  // =================================
-                                  // ENCABEZADO
-                                  // =================================
-                                  Row(
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(20),
+                              child: ExpansionTile(
+                                tilePadding: const EdgeInsets.fromLTRB(
+                                  16,
+                                  12,
+                                  12,
+                                  12,
+                                ),
+                                childrenPadding: const EdgeInsets.fromLTRB(
+                                  16,
+                                  0,
+                                  16,
+                                  18,
+                                ),
+                                iconColor: Colors.purple,
+                                collapsedIconColor: Colors.grey,
+
+                                // ==========================================
+                                // RESUMEN
+                                // ==========================================
+                                leading: Container(
+                                  width: 48,
+                                  height: 48,
+                                  decoration: BoxDecoration(
+                                    color: Colors.purple.withOpacity(0.10),
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
+                                  child: const Icon(
+                                    Icons.shopping_bag_outlined,
+                                    color: Colors.purple,
+                                  ),
+                                ),
+
+                                title: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: Text(
+                                            'Pedido #${pedido.id.substring(0, 6).toUpperCase()}',
+                                            style: const TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                        _estadoChip(estado.toString()),
+                                      ],
+                                    ),
+
+                                    const SizedBox(height: 8),
+
+                                    Text(
+                                      nombreCliente.toString(),
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+
+                                subtitle: Padding(
+                                  padding: const EdgeInsets.only(top: 8),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
-                                      Container(
-                                        width: 48,
-                                        height: 48,
-                                        decoration: BoxDecoration(
-                                          color: Colors.purple.withOpacity(
-                                            0.10,
+                                      Row(
+                                        children: [
+                                          const Icon(
+                                            Icons.calendar_today_outlined,
+                                            size: 16,
+                                            color: Colors.grey,
                                           ),
-                                          borderRadius: BorderRadius.circular(
-                                            14,
-                                          ),
-                                        ),
-                                        child: const Icon(
-                                          Icons.shopping_bag_outlined,
-                                          color: Colors.purple,
-                                        ),
-                                      ),
-
-                                      const SizedBox(width: 12),
-
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            const Text(
-                                              'Pedido',
-                                              style: TextStyle(
-                                                color: Colors.grey,
-                                                fontSize: 13,
-                                              ),
+                                          const SizedBox(width: 6),
+                                          Text(
+                                            fechaEntrega.toString(),
+                                            style: const TextStyle(
+                                              fontSize: 12,
+                                              color: Colors.grey,
                                             ),
-                                            Text(
-                                              '#${pedido.id.substring(0, 6).toUpperCase()}',
+                                          ),
+                                          const SizedBox(width: 12),
+                                          const Icon(
+                                            Icons.access_time,
+                                            size: 16,
+                                            color: Colors.grey,
+                                          ),
+                                          const SizedBox(width: 5),
+                                          Expanded(
+                                            child: Text(
+                                              horaEntrega.toString(),
                                               style: const TextStyle(
-                                                fontSize: 17,
-                                                fontWeight: FontWeight.bold,
+                                                fontSize: 12,
+                                                color: Colors.grey,
                                               ),
                                             ),
-                                          ],
-                                        ),
+                                          ),
+                                        ],
                                       ),
 
-                                      _estadoChip(estado.toString()),
+                                      const SizedBox(height: 7),
 
-                                      IconButton(
-                                        tooltip: 'Eliminar pedido',
-                                        icon: const Icon(
-                                          Icons.delete_outline,
-                                          color: Colors.red,
+                                      Row(
+                                        children: [
+                                          const Icon(
+                                            Icons.payments_outlined,
+                                            size: 17,
+                                            color: Colors.purple,
+                                          ),
+                                          const SizedBox(width: 6),
+                                          Text(
+                                            'MXN \$${total.toStringAsFixed(2)}',
+                                            style: const TextStyle(
+                                              color: Colors.purple,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 14,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+
+                                      const SizedBox(height: 7),
+
+                                      const Text(
+                                        'Toca para ver detalles',
+                                        style: TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: 11,
+                                          fontStyle: FontStyle.italic,
                                         ),
-                                        onPressed: () {
-                                          _confirmarEliminarPedido(
-                                            context,
-                                            pedido.id,
-                                          );
-                                        },
                                       ),
                                     ],
                                   ),
+                                ),
 
-                                  const SizedBox(height: 20),
+                                // ==========================================
+                                // DETALLES
+                                // ==========================================
+                                children: [
+                                  const Divider(),
 
-                                  // =================================
+                                  const SizedBox(height: 10),
+
+                                  // ========================================
                                   // CLIENTE
-                                  // =================================
-                                  const Text(
-                                    'Cliente',
-                                    style: TextStyle(
-                                      fontSize: 17,
-                                      fontWeight: FontWeight.bold,
+                                  // ========================================
+                                  const Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: Text(
+                                      'Cliente',
+                                      style: TextStyle(
+                                        fontSize: 17,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
                                   ),
 
@@ -354,14 +433,17 @@ class _PedidosAdminScreenState extends State<PedidosAdminScreen> {
 
                                   const SizedBox(height: 20),
 
-                                  // =================================
+                                  // ========================================
                                   // ENTREGA
-                                  // =================================
-                                  const Text(
-                                    'Datos de entrega',
-                                    style: TextStyle(
-                                      fontSize: 17,
-                                      fontWeight: FontWeight.bold,
+                                  // ========================================
+                                  const Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: Text(
+                                      'Datos de entrega',
+                                      style: TextStyle(
+                                        fontSize: 17,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
                                   ),
 
@@ -412,23 +494,29 @@ class _PedidosAdminScreenState extends State<PedidosAdminScreen> {
 
                                   const SizedBox(height: 20),
 
-                                  // =================================
+                                  // ========================================
                                   // PRODUCTOS
-                                  // =================================
-                                  const Text(
-                                    'Productos',
-                                    style: TextStyle(
-                                      fontSize: 17,
-                                      fontWeight: FontWeight.bold,
+                                  // ========================================
+                                  const Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: Text(
+                                      'Productos',
+                                      style: TextStyle(
+                                        fontSize: 17,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
                                   ),
 
                                   const SizedBox(height: 10),
 
                                   if (productos.isEmpty)
-                                    const Text(
-                                      'No hay productos registrados',
-                                      style: TextStyle(color: Colors.grey),
+                                    const Align(
+                                      alignment: Alignment.centerLeft,
+                                      child: Text(
+                                        'No hay productos registrados',
+                                        style: TextStyle(color: Colors.grey),
+                                      ),
                                     ),
 
                                   ...productos.map((producto) {
@@ -487,6 +575,7 @@ class _PedidosAdminScreenState extends State<PedidosAdminScreen> {
                                           fontWeight: FontWeight.bold,
                                         ),
                                       ),
+
                                       Text(
                                         'MXN \$${total.toStringAsFixed(2)}',
                                         style: const TextStyle(
@@ -500,20 +589,22 @@ class _PedidosAdminScreenState extends State<PedidosAdminScreen> {
 
                                   const SizedBox(height: 20),
 
-                                  // =================================
-                                  // ESTADO DEL PEDIDO
-                                  // =================================
-                                  const Text(
-                                    'Estado del pedido',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
+                                  // ========================================
+                                  // ESTADO
+                                  // ========================================
+                                  const Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: Text(
+                                      'Estado del pedido',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
                                   ),
 
                                   const SizedBox(height: 8),
 
-                                  // ADMIN PUEDE CAMBIAR ESTOS
                                   if (estado == 'Pendiente' ||
                                       estado == 'Preparando' ||
                                       estado == 'Listo para entregar')
@@ -591,7 +682,6 @@ class _PedidosAdminScreenState extends State<PedidosAdminScreen> {
                                         ),
                                       ),
                                     )
-                                  // REPARTIDOR CONTROLA ESTOS
                                   else
                                     Container(
                                       width: double.infinity,
@@ -649,9 +739,9 @@ class _PedidosAdminScreenState extends State<PedidosAdminScreen> {
                                       ),
                                     ),
 
-                                  // =================================
-                                  // MOTIVO DE NO ENTREGA
-                                  // =================================
+                                  // ========================================
+                                  // MOTIVO NO ENTREGA
+                                  // ========================================
                                   if (estado == 'No entregado' &&
                                       motivoNoEntrega
                                           .toString()
@@ -689,9 +779,9 @@ class _PedidosAdminScreenState extends State<PedidosAdminScreen> {
                                     ),
                                   ],
 
-                                  // =================================
-                                  // VOLVER A INTENTAR ENTREGA
-                                  // =================================
+                                  // ========================================
+                                  // REINTENTAR ENTREGA
+                                  // ========================================
                                   if (estado == 'No entregado') ...[
                                     const SizedBox(height: 12),
 
@@ -759,6 +849,28 @@ class _PedidosAdminScreenState extends State<PedidosAdminScreen> {
                                       ),
                                     ),
                                   ],
+
+                                  const SizedBox(height: 15),
+
+                                  // ========================================
+                                  // ELIMINAR
+                                  // ========================================
+                                  SizedBox(
+                                    width: double.infinity,
+                                    child: TextButton.icon(
+                                      style: TextButton.styleFrom(
+                                        foregroundColor: Colors.red,
+                                      ),
+                                      onPressed: () {
+                                        _confirmarEliminarPedido(
+                                          context,
+                                          pedido.id,
+                                        );
+                                      },
+                                      icon: const Icon(Icons.delete_outline),
+                                      label: const Text('Eliminar pedido'),
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),
@@ -799,7 +911,6 @@ class _PedidosAdminScreenState extends State<PedidosAdminScreen> {
               },
               child: const Text('Cancelar'),
             ),
-
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red,
@@ -844,7 +955,7 @@ class _PedidosAdminScreenState extends State<PedidosAdminScreen> {
   }
 
   // =========================================================
-  // CHIP DE ESTADO
+  // CHIP ESTADO
   // =========================================================
 
   static Widget _estadoChip(String estado) {
@@ -893,7 +1004,7 @@ class _PedidosAdminScreenState extends State<PedidosAdminScreen> {
   }
 
   // =========================================================
-  // DATOS DEL CLIENTE
+  // DATOS CLIENTE
   // =========================================================
 
   static Widget _datoCliente(IconData icono, String texto) {
@@ -902,9 +1013,7 @@ class _PedidosAdminScreenState extends State<PedidosAdminScreen> {
       child: Row(
         children: [
           Icon(icono, color: Colors.purple, size: 20),
-
           const SizedBox(width: 10),
-
           Expanded(child: Text(texto)),
         ],
       ),
@@ -912,7 +1021,7 @@ class _PedidosAdminScreenState extends State<PedidosAdminScreen> {
   }
 
   // =========================================================
-  // DATOS DE ENTREGA
+  // DATOS ENTREGA
   // =========================================================
 
   static Widget _datoEntrega(IconData icono, String titulo, String valor) {
