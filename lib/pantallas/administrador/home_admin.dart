@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'arreglos_personalizados_admin.dart';
 import 'clientes.dart';
-import 'login.dart';
+import '../login.dart';
 import 'productos_admin.dart';
 import 'pedidos_admin.dart';
 

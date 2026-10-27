@@ -3,10 +3,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
-import 'home_cliente.dart';
-import 'home_admin.dart';
+import 'cliente/home_cliente.dart';
+import 'administrador/home_admin.dart';
 import 'registro.dart';
-import 'home_repartidor.dart';
+import 'repartidor/home_repartidor.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});

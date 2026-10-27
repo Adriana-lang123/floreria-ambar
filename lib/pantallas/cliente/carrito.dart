@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'carrito/carrito_provider.dart';
-import 'pedido.dart';
+import '../../estado/carrito_provider.dart';
+import '../../modelos/pedido.dart';
 
 class CarritoScreen extends StatelessWidget {
   const CarritoScreen({super.key});

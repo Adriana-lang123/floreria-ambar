@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'ubicacion_screen.dart';
-import 'login.dart';
+import '../login.dart';
 import 'pedidos.dart';
 import 'arreglos_personalizados.dart';
 import 'mis_arreglos.dart';

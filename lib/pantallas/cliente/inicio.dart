@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
 
-import 'carrito/carrito_provider.dart';
+import '../../estado/carrito_provider.dart';
 import 'categorias.dart';
 
 class InicioScreen extends StatelessWidget {
