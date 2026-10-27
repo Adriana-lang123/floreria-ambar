@@ -19,7 +19,13 @@ class _PersonalizadaScreenState extends State<PersonalizadaScreen> {
   String tamanoSeleccionado = 'Mediano';
   String ocasionSeleccionada = 'Cumpleaños';
   String coloresSeleccionados = 'Tonos pastel';
+
   bool permiteSustitucion = true;
+
+  // null = todavía no ha elegido
+  // false = quiere indicar las flores
+  // true = prefiere que la florista elija
+  bool? floristaEligeFlores;
 
   final TextEditingController presupuestoController = TextEditingController();
 
@@ -138,7 +144,9 @@ class _PersonalizadaScreenState extends State<PersonalizadaScreen> {
       confirmText: 'Aceptar',
     );
 
-    if (hora == null) return;
+    if (hora == null) {
+      return;
+    }
 
     final minutos = hora.hour * 60 + hora.minute;
 
@@ -146,7 +154,9 @@ class _PersonalizadaScreenState extends State<PersonalizadaScreen> {
     const cierre = 21 * 60;
 
     if (minutos < apertura || minutos > cierre) {
-      if (!mounted) return;
+      if (!mounted) {
+        return;
+      }
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -177,38 +187,86 @@ class _PersonalizadaScreenState extends State<PersonalizadaScreen> {
           content: Text('Debes iniciar sesión para solicitar un arreglo.'),
         ),
       );
+
       return;
     }
 
-    // PRESUPUESTO OBLIGATORIO
+    // =======================================================
+    // PRESUPUESTO
+    // =======================================================
+
     if (presupuestoController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Ingresa tu presupuesto aproximado.')),
       );
+
       return;
     }
 
-    // DESCRIPCIÓN OBLIGATORIA
+    // =======================================================
+    // ELECCIÓN DE FLORES
+    // =======================================================
+
+    if (floristaEligeFlores == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Selecciona si deseas elegir las flores o prefieres que la florista las elija.',
+          ),
+        ),
+      );
+
+      return;
+    }
+
+    // Si el cliente eligió especificar flores,
+    // entonces debe escribir al menos una.
+    if (floristaEligeFlores == false &&
+        floresDeseadasController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Indica al menos una flor que te gustaría incluir.'),
+        ),
+      );
+
+      return;
+    }
+
+    // =======================================================
+    // DESCRIPCIÓN
+    // =======================================================
+
     if (descripcionController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Cuéntanos cómo te gustaría que fuera tu arreglo.'),
         ),
       );
+
       return;
     }
+
+    // =======================================================
+    // FECHA
+    // =======================================================
 
     if (fechaEntrega == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Selecciona la fecha de entrega.')),
       );
+
       return;
     }
+
+    // =======================================================
+    // HORA
+    // =======================================================
 
     if (horaEntrega == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Selecciona la hora de entrega.')),
       );
+
       return;
     }
 
@@ -225,6 +283,7 @@ class _PersonalizadaScreenState extends State<PersonalizadaScreen> {
           ),
         ),
       );
+
       return;
     }
 
@@ -241,26 +300,34 @@ class _PersonalizadaScreenState extends State<PersonalizadaScreen> {
         horaEntrega!.minute,
       );
 
+      // =====================================================
+      // GUARDAR EN FIRESTORE
+      // =====================================================
+
       await FirebaseFirestore.instance.collection('arreglos_personalizados').add({
         'usuarioId': usuario.uid,
         'correoUsuario': usuario.email ?? '',
-
         'tipoArreglo': tipoArreglo,
-
         'estilo': estiloSeleccionado,
-
         'tamano': tamanoSeleccionado,
-
         'ocasion': ocasionSeleccionada,
-
         'colores': coloresSeleccionados,
-
         'presupuesto': presupuestoController.text.trim(),
 
-        'floresDeseadas': floresDeseadasController.text.trim(),
+        // ===================================================
+        // FLORES
+        // ===================================================
+        'floristaEligeFlores': floristaEligeFlores,
+
+        'floresDeseadas': floristaEligeFlores == true
+            ? 'A elección de la florista'
+            : floresDeseadasController.text.trim(),
 
         'floresNoDeseadas': floresNoDeseadasController.text.trim(),
 
+        // ===================================================
+        // OTROS DATOS
+        // ===================================================
         'mensajeTarjeta': mensajeTarjetaController.text.trim(),
 
         'descripcion': descripcionController.text.trim(),
@@ -279,9 +346,13 @@ class _PersonalizadaScreenState extends State<PersonalizadaScreen> {
         'fechaSolicitud': FieldValue.serverTimestamp(),
       });
 
-      if (!mounted) return;
+      if (!mounted) {
+        return;
+      }
 
+      // =====================================================
       // LIMPIAR FORMULARIO
+      // =====================================================
 
       presupuestoController.clear();
       floresDeseadasController.clear();
@@ -295,11 +366,19 @@ class _PersonalizadaScreenState extends State<PersonalizadaScreen> {
         tamanoSeleccionado = 'Mediano';
         ocasionSeleccionada = 'Cumpleaños';
         coloresSeleccionados = 'Tonos pastel';
+
         permiteSustitucion = true;
+
+        // Se vuelve a dejar sin opción seleccionada.
+        floristaEligeFlores = null;
 
         fechaEntrega = null;
         horaEntrega = null;
       });
+
+      // =====================================================
+      // CONFIRMACIÓN
+      // =====================================================
 
       await showDialog(
         context: context,
@@ -336,7 +415,9 @@ class _PersonalizadaScreenState extends State<PersonalizadaScreen> {
         },
       );
     } catch (e) {
-      if (!mounted) return;
+      if (!mounted) {
+        return;
+      }
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('No se pudo enviar la solicitud: $e')),
@@ -371,7 +452,6 @@ class _PersonalizadaScreenState extends State<PersonalizadaScreen> {
 
       body: ListView(
         padding: const EdgeInsets.all(20),
-
         children: [
           // =================================================
           // ENCABEZADO
@@ -553,20 +633,127 @@ class _PersonalizadaScreenState extends State<PersonalizadaScreen> {
 
           const SizedBox(height: 8),
 
-          TextField(
-            controller: floresDeseadasController,
-            decoration: _inputDecoration(
-              'Ej. rosas, tulipanes, margaritas...',
-              Icons.local_florist_outlined,
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.grey.shade300),
+            ),
+            child: Column(
+              children: [
+                // ==========================================
+                // QUIERO ELEGIR LAS FLORES
+                // ==========================================
+                RadioListTile<bool>(
+                  contentPadding: EdgeInsets.zero,
+                  value: false,
+                  groupValue: floristaEligeFlores,
+                  activeColor: Colors.purple,
+                  title: const Text(
+                    'Quiero elegir las flores',
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                  subtitle: const Text(
+                    'Escribe las flores que te gustaría incluir en tu arreglo.',
+                  ),
+                  onChanged: (valor) {
+                    if (valor == null) {
+                      return;
+                    }
+
+                    setState(() {
+                      floristaEligeFlores = valor;
+                    });
+                  },
+                ),
+
+                const Divider(),
+
+                // ==========================================
+                // FLORISTA ELIGE
+                // ==========================================
+                RadioListTile<bool>(
+                  contentPadding: EdgeInsets.zero,
+                  value: true,
+                  groupValue: floristaEligeFlores,
+                  activeColor: Colors.purple,
+                  title: const Text(
+                    'Prefiero que la florista elija',
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                  subtitle: const Text(
+                    'La florista seleccionará las flores según tus preferencias.',
+                  ),
+                  onChanged: (valor) {
+                    if (valor == null) {
+                      return;
+                    }
+
+                    setState(() {
+                      floristaEligeFlores = valor;
+
+                      floresDeseadasController.clear();
+                    });
+                  },
+                ),
+              ],
             ),
           ),
 
-          const SizedBox(height: 6),
+          // =================================================
+          // CAMPO PARA ESCRIBIR FLORES
+          // =================================================
+          if (floristaEligeFlores == false) ...[
+            const SizedBox(height: 12),
 
-          const Text(
-            'Opcional. Puedes dejarlo vacío y permitir que la florista elija.',
-            style: TextStyle(fontSize: 12, color: Colors.grey),
-          ),
+            TextField(
+              controller: floresDeseadasController,
+              decoration: _inputDecoration(
+                'Ej. rosas, tulipanes, margaritas...',
+                Icons.local_florist_outlined,
+              ),
+            ),
+
+            const SizedBox(height: 6),
+
+            const Text(
+              'Indica al menos una flor que te gustaría incluir.',
+              style: TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+          ],
+
+          // =================================================
+          // MENSAJE FLORISTA ELIGE
+          // =================================================
+          if (floristaEligeFlores == true) ...[
+            const SizedBox(height: 12),
+
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.purple.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: Colors.purple.withOpacity(0.10)),
+              ),
+              child: const Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(Icons.local_florist_outlined, color: Colors.purple),
+
+                  SizedBox(width: 10),
+
+                  Expanded(
+                    child: Text(
+                      'La florista elegirá las flores según el estilo, colores, presupuesto y disponibilidad.',
+                      style: TextStyle(fontSize: 13, height: 1.4),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
 
           const SizedBox(height: 20),
 
@@ -601,16 +788,13 @@ class _PersonalizadaScreenState extends State<PersonalizadaScreen> {
               contentPadding: EdgeInsets.zero,
               value: permiteSustitucion,
               activeColor: Colors.purple,
-
               title: const Text(
                 'Permitir sustituciones',
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
-
               subtitle: const Text(
                 'Si alguna flor no está disponible, la florista puede sustituirla respetando el estilo y los colores.',
               ),
-
               onChanged: (valor) {
                 setState(() {
                   permiteSustitucion = valor;
@@ -622,7 +806,7 @@ class _PersonalizadaScreenState extends State<PersonalizadaScreen> {
           const SizedBox(height: 20),
 
           // =================================================
-          // MENSAJE TARJETA
+          // MENSAJE PARA TARJETA
           // =================================================
           _tituloSeccion('Mensaje para tarjeta'),
 
@@ -659,7 +843,7 @@ class _PersonalizadaScreenState extends State<PersonalizadaScreen> {
           const SizedBox(height: 25),
 
           // =================================================
-          // FECHA Y HORA
+          // ENTREGA
           // =================================================
           _tituloSeccion('Entrega'),
 
@@ -697,9 +881,7 @@ class _PersonalizadaScreenState extends State<PersonalizadaScreen> {
                   borderRadius: BorderRadius.circular(16),
                 ),
               ),
-
               onPressed: enviando ? null : solicitarArreglo,
-
               icon: enviando
                   ? const SizedBox(
                       width: 20,
@@ -710,7 +892,6 @@ class _PersonalizadaScreenState extends State<PersonalizadaScreen> {
                       ),
                     )
                   : const Icon(Icons.send_outlined),
-
               label: Text(
                 enviando ? 'ENVIANDO...' : 'ENVIAR SOLICITUD',
                 style: const TextStyle(fontWeight: FontWeight.bold),
@@ -752,7 +933,6 @@ class _PersonalizadaScreenState extends State<PersonalizadaScreen> {
     return DropdownButtonFormField<String>(
       value: valor,
       isExpanded: true,
-
       decoration: InputDecoration(
         prefixIcon: Icon(icono, color: Colors.purple),
         filled: true,
@@ -770,19 +950,17 @@ class _PersonalizadaScreenState extends State<PersonalizadaScreen> {
           borderSide: const BorderSide(color: Colors.purple),
         ),
       ),
-
       items: items
           .map(
             (item) => DropdownMenuItem<String>(value: item, child: Text(item)),
           )
           .toList(),
-
       onChanged: onChanged,
     );
   }
 
   // =========================================================
-  // DECORACIÓN DE TEXTFIELD
+  // DECORACIÓN TEXTFIELD
   // =========================================================
 
   InputDecoration _inputDecoration(
@@ -792,22 +970,15 @@ class _PersonalizadaScreenState extends State<PersonalizadaScreen> {
   }) {
     return InputDecoration(
       hintText: hint,
-
       prefixText: prefixText,
-
       prefixIcon: Icon(icono, color: Colors.purple),
-
       filled: true,
-
       fillColor: Colors.white,
-
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
-
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(15),
         borderSide: BorderSide(color: Colors.grey.shade300),
       ),
-
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(15),
         borderSide: const BorderSide(color: Colors.purple),
@@ -822,19 +993,15 @@ class _PersonalizadaScreenState extends State<PersonalizadaScreen> {
   Widget _selectorFecha(BuildContext context) {
     return InkWell(
       onTap: seleccionarFecha,
-
       borderRadius: BorderRadius.circular(15),
-
       child: Container(
         height: 58,
         padding: const EdgeInsets.symmetric(horizontal: 12),
-
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(15),
           border: Border.all(color: Colors.grey.shade300),
         ),
-
         child: Row(
           children: [
             const Icon(Icons.calendar_today_outlined, color: Colors.purple),
@@ -864,19 +1031,15 @@ class _PersonalizadaScreenState extends State<PersonalizadaScreen> {
   Widget _selectorHora(BuildContext context) {
     return InkWell(
       onTap: seleccionarHora,
-
       borderRadius: BorderRadius.circular(15),
-
       child: Container(
         height: 58,
         padding: const EdgeInsets.symmetric(horizontal: 12),
-
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(15),
           border: Border.all(color: Colors.grey.shade300),
         ),
-
         child: Row(
           children: [
             const Icon(Icons.access_time, color: Colors.purple),
